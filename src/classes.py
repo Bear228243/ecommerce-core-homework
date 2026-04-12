@@ -1,8 +1,8 @@
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 
 
 class Product:
-    """Класс для представления товара."""
+    """Базовый класс для представления товара."""
     name: str
     description: str
     __price: float
@@ -43,12 +43,67 @@ class Product:
 
     def __add__(self, other: "Product") -> float:
         """Сложение продуктов: цена * количество."""
-        if not isinstance(other, Product):
-            raise TypeError("Можно складывать только объекты класса Product")
+        if type(self) is not type(other):
+            raise TypeError("Нельзя складывать товары разных классов")
         return (self.price * self.quantity) + (other.price * other.quantity)
 
     def __repr__(self):
         return f"Product(name='{self.name}', price={self.price}, quantity={self.quantity})"
+
+
+class Smartphone(Product):
+    """Класс-наследник для смартфонов."""
+    efficiency: float
+    model: str
+    memory: int
+    color: str
+
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        price: float,
+        quantity: int,
+        efficiency: float,
+        model: str,
+        memory: int,
+        color: str
+    ):
+        super().__init__(name, description, price, quantity)
+        self.efficiency = efficiency
+        self.model = model
+        self.memory = memory
+        self.color = color
+
+    def __repr__(self):
+        return (f"Smartphone(name='{self.name}', model='{self.model}', "
+                f"price={self.price}, quantity={self.quantity})")
+
+
+class LawnGrass(Product):
+    """Класс-наследник для травы газонной."""
+    country: str
+    germination_period: int
+    color: str
+
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        price: float,
+        quantity: int,
+        country: str,
+        germination_period: int,
+        color: str
+    ):
+        super().__init__(name, description, price, quantity)
+        self.country = country
+        self.germination_period = germination_period
+        self.color = color
+
+    def __repr__(self):
+        return (f"LawnGrass(name='{self.name}', country='{self.country}', "
+                f"price={self.price}, quantity={self.quantity})")
 
 
 class Category:
@@ -70,7 +125,9 @@ class Category:
         Category.product_count += len(self.__products)
 
     def add_product(self, product: Product) -> None:
-        """Добавляет продукт в приватный список."""
+        """Добавляет продукт в приватный список с проверкой типа."""
+        if not isinstance(product, Product):
+            raise TypeError("В категорию можно добавлять только объекты Product или его наследников")
         self.__products.append(product)
         Category.product_count += 1
 
