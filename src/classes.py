@@ -5,7 +5,7 @@ class Product:
     """Класс для представления товара."""
     name: str
     description: str
-    __price: float  # Приватный атрибут
+    __price: float
     quantity: int
 
     def __init__(self, name: str, description: str, price: float, quantity: int):
@@ -37,6 +37,16 @@ class Product:
             quantity=product_data["quantity"]
         )
 
+    def __str__(self) -> str:
+        """Строковое представление продукта."""
+        return f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт."
+
+    def __add__(self, other: "Product") -> float:
+        """Сложение продуктов: цена * количество."""
+        if not isinstance(other, Product):
+            raise TypeError("Можно складывать только объекты класса Product")
+        return (self.price * self.quantity) + (other.price * other.quantity)
+
     def __repr__(self):
         return f"Product(name='{self.name}', price={self.price}, quantity={self.quantity})"
 
@@ -45,7 +55,7 @@ class Category:
     """Класс для категорий товаров."""
     name: str
     description: str
-    __products: List[Product]  # Приватный атрибут
+    __products: List[Product]
 
     # Атрибуты класса (счетчики)
     category_count: int = 0
@@ -56,7 +66,6 @@ class Category:
         self.description = description
         self.__products = products if products is not None else []
 
-        # Увеличиваем счетчики класса
         Category.category_count += 1
         Category.product_count += len(self.__products)
 
@@ -67,17 +76,22 @@ class Category:
 
     @property
     def products(self) -> str:
-        """Геттер для вывода списка продуктов в читаемом формате."""
+        """Геттер для вывода списка продуктов."""
         if not self.__products:
             return "В категории нет товаров."
 
         result = ""
         for product in self.__products:
-            result += f"{product.name}, {product.price} руб. Остаток: {product.quantity} шт.\n"
+            result += str(product) + "\n"
         return result.strip()
 
+    def __str__(self) -> str:
+        """Строковое представление категории."""
+        total_quantity = sum(product.quantity for product in self.__products)
+        return f"{self.name}, количество продуктов: {total_quantity} шт."
+
     def get_products_list(self) -> List[Product]:
-        """Вспомогательный метод для тестов (возвращает список продуктов)."""
+        """Вспомогательный метод для тестов."""
         return self.__products
 
     def __repr__(self):
