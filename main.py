@@ -1,11 +1,10 @@
 from src.classes import Product, Category, Smartphone, LawnGrass
 
 if __name__ == "__main__":
-    print("=== СОЗДАЕМ ТОВАРЫ ===")
+    print("=== СОЗДАЕМ ТОВАРЫ (следи за выводом миксина) ===\n")
 
     # Обычный продукт
     charger = Product("Зарядное устройство", "Быстрая зарядка 65W", 2500.0, 15)
-    print(charger)
 
     # Смартфон
     smartphone = Smartphone(
@@ -18,7 +17,6 @@ if __name__ == "__main__":
         memory=256,
         color="Серый"
     )
-    print(smartphone)
 
     # Трава газонная
     grass = LawnGrass(
@@ -30,17 +28,16 @@ if __name__ == "__main__":
         germination_period=10,
         color="Изумрудный"
     )
-    print(grass)
 
     print("\n=== СОЗДАЕМ КАТЕГОРИИ ===")
 
     electronics = Category("Электроника", "Техника и аксессуары", [charger, smartphone])
-    print(electronics)
+    print(f"\n{electronics}")
     print("Товары в категории:")
     print(electronics.products)
 
     garden = Category("Сад и огород", "Все для сада", [grass])
-    print(garden)
+    print(f"\n{garden}")
     print(garden.products)
 
     print("\n=== ПРОВЕРКА СЛОЖЕНИЯ ===")
@@ -56,38 +53,12 @@ if __name__ == "__main__":
         color="Titanium"
     )
 
-    # Сложение двух смартфонов (работает)
-    print(f"Сумма двух смартфонов: {smartphone + smartphone2} руб.")
+    print(f"\nСумма двух смартфонов: {smartphone + smartphone2} руб.")
 
-    # Попытка сложить смартфон и траву (ошибка)
     print("\nПопытка сложить смартфон и траву:")
     try:
         result = smartphone + grass
         print(f"Результат: {result}")
-    except TypeError as e:
-        print(f"Ошибка: {e}")
-
-    print("\n=== ДОБАВЛЕНИЕ ТОВАРОВ ===")
-
-    new_phone = Smartphone(
-        name="Xiaomi 14",
-        description="512GB, White",
-        price=85000.0,
-        quantity=7,
-        efficiency=9.2,
-        model="14",
-        memory=512,
-        color="White"
-    )
-
-    electronics.add_product(new_phone)
-    print(f"После добавления: {electronics}")
-    print(electronics.products)
-
-    # Попытка добавить не-товар (ошибка)
-    print("\nПопытка добавить строку вместо товара:")
-    try:
-        electronics.add_product("Это не товар")
     except TypeError as e:
         print(f"Ошибка: {e}")
 

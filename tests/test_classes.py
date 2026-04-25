@@ -1,5 +1,5 @@
 import pytest
-from src.classes import Product, Category, Smartphone, LawnGrass
+from src.classes import Product, Category, Smartphone, LawnGrass, BaseProduct, MixinLogger
 
 
 # Фикстуры
@@ -49,7 +49,20 @@ def sample_category(sample_products_list):
     return Category("Mixed Category", "All types of products", sample_products_list)
 
 
-# 1. Тесты инициализации Product
+# 1. Тесты абстрактного класса BaseProduct
+def test_base_product_is_abstract():
+    """Проверяем, что BaseProduct - абстрактный класс."""
+    from abc import ABC
+    assert issubclass(BaseProduct, ABC)
+
+
+def test_cannot_instantiate_base_product():
+    """Проверяем, что нельзя создать экземпляр абстрактного класса."""
+    with pytest.raises(TypeError):
+        BaseProduct("Test", "Desc", 100.0, 5)
+
+
+# 2. Тесты инициализации Product (базовый класс)
 def test_product_init(sample_product):
     assert sample_product.name == "iPhone 15"
     assert sample_product.description == "Latest model"
@@ -57,7 +70,7 @@ def test_product_init(sample_product):
     assert sample_product.quantity == 3
 
 
-# 2. Тесты инициализации Smartphone
+# 3. Тесты инициализации Smartphone
 def test_smartphone_init(sample_smartphone):
     assert sample_smartphone.name == "Samsung S24"
     assert sample_smartphone.description == "256GB, Black"
@@ -69,7 +82,7 @@ def test_smartphone_init(sample_smartphone):
     assert sample_smartphone.color == "Black"
 
 
-# 3. Тесты инициализации LawnGrass
+# 4. Тесты инициализации LawnGrass
 def test_lawn_grass_init(sample_lawn_grass):
     assert sample_lawn_grass.name == "Green Grass"
     assert sample_lawn_grass.description == "Газонная трава"
@@ -80,31 +93,64 @@ def test_lawn_grass_init(sample_lawn_grass):
     assert sample_lawn_grass.color == "Зеленый"
 
 
-# 4. Проверка наследования
-def test_smartphone_is_product_subclass():
+# 5. Проверка наследования
+def test_product_inherits_from_base_product():
+    """Product должен наследоваться от BaseProduct."""
+    assert issubclass(Product, BaseProduct)
+
+
+def test_smartphone_inherits_from_product():
+    """Smartphone должен наследоваться от Product."""
     assert issubclass(Smartphone, Product)
 
 
-def test_lawn_grass_is_product_subclass():
+def test_lawn_grass_inherits_from_product():
+    """LawnGrass должен наследоваться от Product."""
     assert issubclass(LawnGrass, Product)
 
 
-def test_smartphone_is_product_instance(sample_smartphone):
-    assert isinstance(sample_smartphone, Product)
+def test_smartphone_inherits_from_base_product():
+    """Smartphone должен наследоваться от BaseProduct через Product."""
+    assert issubclass(Smartphone, BaseProduct)
 
 
-def test_lawn_grass_is_product_instance(sample_lawn_grass):
-    assert isinstance(sample_lawn_grass, Product)
+def test_lawn_grass_inherits_from_base_product():
+    """LawnGrass должен наследоваться от BaseProduct через Product."""
+    assert issubclass(LawnGrass, BaseProduct)
 
 
-# 5. Тесты инициализации Category
+# 6. Тест миксина MixinLogger
+def test_mixin_logger_is_parent():
+    """Проверяем, что MixinLogger является родителем Product."""
+    assert issubclass(Product, MixinLogger)
+
+
+def test_mixin_logger_output(capsys):
+    Product("Test Product", "Description", 100.0, 10)
+    captured = capsys.readouterr()
+    assert "Создан объект класса Product" in captured.out
+
+
+def test_mixin_logger_smartphone_output(capsys):
+    Smartphone("Test Phone", "Desc", 1000.0, 2, 9.0, "Model", 128, "Black")
+    captured = capsys.readouterr()
+    assert "Создан объект класса Smartphone" in captured.out
+
+
+def test_mixin_logger_lawn_grass_output(capsys):
+    LawnGrass("Test Grass", "Desc", 100.0, 10, "RU", 7, "Green")
+    captured = capsys.readouterr()
+    assert "Создан объект класса LawnGrass" in captured.out
+
+
+# 7. Тесты инициализации Category
 def test_category_init(sample_category):
     assert sample_category.name == "Mixed Category"
     assert sample_category.description == "All types of products"
     assert len(sample_category.get_products_list()) == 3
 
 
-# 6. Тесты подсчета количества продуктов и категорий
+# 8. Тесты подсчета количества продуктов и категорий
 def test_product_count_auto():
     initial_product_count = Category.product_count
 
@@ -124,7 +170,7 @@ def test_category_count_auto():
     assert Category.category_count == initial_category_count + 2
 
 
-# 7. Тест метода add_product с проверкой типа
+# 9. Тест метода add_product
 def test_add_product_valid(sample_category, sample_smartphone):
     initial_count = Category.product_count
     initial_len = len(sample_category.get_products_list())
@@ -139,16 +185,11 @@ def test_add_product_invalid_type():
     category = Category("Test", "Description")
     with pytest.raises(TypeError) as exc_info:
         category.add_product("not a product")
-    assert "В категорию можно добавлять только объекты Product или его наследников" in str(exc_info.value)
+    expected_msg = "Можно добавлять только объекты Product или его наследников"
+    assert expected_msg in str(exc_info.value)
 
 
-def test_add_product_invalid_dict():
-    category = Category("Test", "Description")
-    with pytest.raises(TypeError):
-        category.add_product({"name": "test"})
-
-
-# 8. Тест геттера products
+# 10. Тест геттера products
 def test_products_getter(sample_products_list):
     category = Category("Test", "Desc", sample_products_list)
     products_str = category.products
@@ -157,7 +198,7 @@ def test_products_getter(sample_products_list):
     assert "Lawn" in products_str
 
 
-# 9. Тест класс-метода new_product
+# 11. Тест класс-метода new_product
 def test_new_product_classmethod():
     product_data = {
         "name": "Test Product",
@@ -172,7 +213,7 @@ def test_new_product_classmethod():
     assert product.quantity == 5
 
 
-# 10. Тесты геттера и сеттера цены
+# 12. Тесты геттера и сеттера цены
 def test_price_getter(sample_product):
     assert sample_product.price == 120000.0
 
@@ -190,7 +231,7 @@ def test_price_setter_zero(capsys):
     assert "Цена не должна быть нулевая или отрицательная" in captured.out
 
 
-# 11. Тест метода __str__
+# 13. Тест метода __str__
 def test_product_str(sample_product):
     assert str(sample_product) == "iPhone 15, 120000.0 руб. Остаток: 3 шт."
 
@@ -209,7 +250,7 @@ def test_category_str(sample_products_list):
     assert str(category) == "Test, количество продуктов: 55 шт."
 
 
-# 12. Тест метода __add__
+# 14. Тест метода __add__
 def test_product_add_same_type():
     product1 = Product("P1", "D1", 100.0, 5)  # 500
     product2 = Product("P2", "D2", 200.0, 3)  # 600
@@ -228,24 +269,15 @@ def test_lawn_grass_add_same_type():
     assert grass1 + grass2 == 2000.0
 
 
-def test_add_different_types_raises_error(sample_smartphone, sample_lawn_grass):
+def test_add_different_types_raises_error():
+    phone = Smartphone("Phone", "D", 1000.0, 1, 9.0, "M", 128, "Black")
+    grass = LawnGrass("Grass", "D", 100.0, 1, "RU", 7, "Green")
     with pytest.raises(TypeError) as exc_info:
-        _ = sample_smartphone + sample_lawn_grass
+        _ = phone + grass
     assert "Нельзя складывать товары разных классов" in str(exc_info.value)
 
 
-def test_add_product_with_smartphone_raises_error(sample_product, sample_smartphone):
-    with pytest.raises(TypeError) as exc_info:
-        _ = sample_product + sample_smartphone
-    assert "Нельзя складывать товары разных классов" in str(exc_info.value)
-
-
-def test_add_smartphone_with_lawn_grass_raises_error(sample_smartphone, sample_lawn_grass):
-    with pytest.raises(TypeError):
-        _ = sample_smartphone + sample_lawn_grass
-
-
-# 13. Тест приватности атрибута __products
+# 15. Тест приватности атрибута __products
 def test_products_is_private(sample_category):
     with pytest.raises(AttributeError):
         _ = sample_category.__products

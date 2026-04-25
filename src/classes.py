@@ -1,13 +1,30 @@
-from typing import List, Optional, Dict, Any, Union
+from abc import ABC, abstractmethod
+from typing import List, Optional, Dict, Any
 
 
-class Product:
-    """Базовый класс для представления товара."""
-    name: str
-    description: str
-    __price: float
-    quantity: int
+class MixinLogger:
+    """Миксин для логирования создания объектов."""
 
+    def __init__(self, *args, **kwargs):
+        print(f"Создан объект класса {self.__class__.__name__} с параметрами:")
+        print(f"  {repr(self)}")
+        super().__init__(*args, **kwargs)
+
+    def __repr__(self):
+        """Магический метод для представления объекта."""
+        attrs = []
+        for key, value in self.__dict__.items():
+            # Пропускаем приватные атрибуты с __ (кроме __price)
+            if key.startswith('_') and not key.startswith('__'):
+                continue
+            attrs.append(f"{key}={value}")
+        return f"{self.__class__.__name__}({', '.join(attrs)})"
+
+
+class BaseProduct(ABC):
+    """Абстрактный базовый класс для всех продуктов."""
+
+    @abstractmethod
     def __init__(self, name: str, description: str, price: float, quantity: int):
         self.name = name
         self.description = description
@@ -27,6 +44,23 @@ class Product:
         else:
             self.__price = new_price
 
+    @abstractmethod
+    def __str__(self) -> str:
+        """Абстрактный метод строкового представления."""
+        pass
+
+    @abstractmethod
+    def __add__(self, other: "BaseProduct") -> float:
+        """Абстрактный метод сложения продуктов."""
+        pass
+
+
+class Product(MixinLogger, BaseProduct):
+    """Класс для представления товара."""
+
+    def __init__(self, name: str, description: str, price: float, quantity: int):
+        super().__init__(name=name, description=description, price=price, quantity=quantity)
+
     @classmethod
     def new_product(cls, product_data: Dict[str, Any]) -> "Product":
         """Класс-метод для создания продукта из словаря."""
@@ -43,12 +77,9 @@ class Product:
 
     def __add__(self, other: "Product") -> float:
         """Сложение продуктов: цена * количество."""
-        if type(self) is not type(other):
+        if not isinstance(other, type(self)):
             raise TypeError("Нельзя складывать товары разных классов")
         return (self.price * self.quantity) + (other.price * other.quantity)
-
-    def __repr__(self):
-        return f"Product(name='{self.name}', price={self.price}, quantity={self.quantity})"
 
 
 class Smartphone(Product):
@@ -75,10 +106,6 @@ class Smartphone(Product):
         self.memory = memory
         self.color = color
 
-    def __repr__(self):
-        return (f"Smartphone(name='{self.name}', model='{self.model}', "
-                f"price={self.price}, quantity={self.quantity})")
-
 
 class LawnGrass(Product):
     """Класс-наследник для травы газонной."""
@@ -100,10 +127,6 @@ class LawnGrass(Product):
         self.country = country
         self.germination_period = germination_period
         self.color = color
-
-    def __repr__(self):
-        return (f"LawnGrass(name='{self.name}', country='{self.country}', "
-                f"price={self.price}, quantity={self.quantity})")
 
 
 class Category:
@@ -127,7 +150,7 @@ class Category:
     def add_product(self, product: Product) -> None:
         """Добавляет продукт в приватный список с проверкой типа."""
         if not isinstance(product, Product):
-            raise TypeError("В категорию можно добавлять только объекты Product или его наследников")
+            raise TypeError("Можно добавлять только объекты Product или его наследников")
         self.__products.append(product)
         Category.product_count += 1
 
@@ -150,6 +173,3 @@ class Category:
     def get_products_list(self) -> List[Product]:
         """Вспомогательный метод для тестов."""
         return self.__products
-
-    def __repr__(self):
-        return f"Category(name='{self.name}', products_count={len(self.__products)})"
