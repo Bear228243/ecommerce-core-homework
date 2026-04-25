@@ -14,7 +14,6 @@ class MixinLogger:
         """Магический метод для представления объекта."""
         attrs = []
         for key, value in self.__dict__.items():
-            # Пропускаем приватные атрибуты с __ (кроме __price)
             if key.startswith('_') and not key.startswith('__'):
                 continue
             attrs.append(f"{key}={value}")
@@ -59,6 +58,8 @@ class Product(MixinLogger, BaseProduct):
     """Класс для представления товара."""
 
     def __init__(self, name: str, description: str, price: float, quantity: int):
+        if quantity <= 0:
+            raise ValueError("Товар с нулевым количеством не может быть добавлен")
         super().__init__(name=name, description=description, price=price, quantity=quantity)
 
     @classmethod
@@ -173,3 +174,11 @@ class Category:
     def get_products_list(self) -> List[Product]:
         """Вспомогательный метод для тестов."""
         return self.__products
+
+    def average_price(self) -> float:
+        """Метод подсчета среднего ценника всех товаров в категории."""
+        try:
+            total_price = sum(product.price for product in self.__products)
+            return total_price / len(self.__products)
+        except ZeroDivisionError:
+            return 0.0

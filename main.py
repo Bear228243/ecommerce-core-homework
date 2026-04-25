@@ -1,67 +1,39 @@
-from src.classes import Product, Category, Smartphone, LawnGrass
+from src.classes import Product, Category
 
 if __name__ == "__main__":
-    print("=== СОЗДАЕМ ТОВАРЫ (следи за выводом миксина) ===\n")
+    print("=== ТЕСТ ИСКЛЮЧЕНИЙ ===\n")
 
-    # Обычный продукт
-    charger = Product("Зарядное устройство", "Быстрая зарядка 65W", 2500.0, 15)
-
-    # Смартфон
-    smartphone = Smartphone(
-        name="Samsung Galaxy S23 Ultra",
-        description="256GB, Серый цвет, 200MP камера",
-        price=180000.0,
-        quantity=5,
-        efficiency=9.8,
-        model="S23 Ultra",
-        memory=256,
-        color="Серый"
-    )
-
-    # Трава газонная
-    grass = LawnGrass(
-        name="Газонная трава Премиум",
-        description="Быстрорастущая, морозостойкая",
-        price=750.0,
-        quantity=200,
-        country="Россия",
-        germination_period=10,
-        color="Изумрудный"
-    )
-
-    print("\n=== СОЗДАЕМ КАТЕГОРИИ ===")
-
-    electronics = Category("Электроника", "Техника и аксессуары", [charger, smartphone])
-    print(f"\n{electronics}")
-    print("Товары в категории:")
-    print(electronics.products)
-
-    garden = Category("Сад и огород", "Все для сада", [grass])
-    print(f"\n{garden}")
-    print(garden.products)
-
-    print("\n=== ПРОВЕРКА СЛОЖЕНИЯ ===")
-
-    smartphone2 = Smartphone(
-        name="iPhone 15",
-        description="512GB, Titanium",
-        price=210000.0,
-        quantity=3,
-        efficiency=9.7,
-        model="15 Pro",
-        memory=512,
-        color="Titanium"
-    )
-
-    print(f"\nСумма двух смартфонов: {smartphone + smartphone2} руб.")
-
-    print("\nПопытка сложить смартфон и траву:")
+    # Попытка создать товар с нулевым количеством
+    print("Попытка создать товар с quantity=0:")
     try:
-        result = smartphone + grass
-        print(f"Результат: {result}")
-    except TypeError as e:
+        bad_product = Product("Плохой товар", "Не должен создаться", 100.0, 0)
+    except ValueError as e:
         print(f"Ошибка: {e}")
 
-    print("\n=== ИТОГОВЫЕ СЧЕТЧИКИ ===")
-    print(f"Всего категорий: {Category.category_count}")
-    print(f"Всего товаров: {Category.product_count}")
+    print("\nПопытка создать товар с quantity=5:")
+    good_product = Product("Хороший товар", "Создается нормально", 200.0, 5)
+    print(f"Создан: {good_product}")
+
+    print("\n=== СРЕДНИЙ ЦЕННИК ===\n")
+
+    # Создаем категорию с товарами
+    p1 = Product("Товар 1", "Описание 1", 100.0, 10)
+    p2 = Product("Товар 2", "Описание 2", 300.0, 5)
+    p3 = Product("Товар 3", "Описание 3", 500.0, 2)
+
+    category = Category("Тестовая категория", "Для проверки", [p1, p2, p3])
+
+    print(f"Категория: {category}")
+    print(f"Средний ценник: {category.average_price()} руб.")
+    # Ожидается: (100 + 300 + 500) / 3 = 300.0
+
+    print("\nПроверка пустой категории:")
+    empty_category = Category("Пустая", "Нет товаров")
+    print(f"Средний ценник пустой категории: {empty_category.average_price()} руб.")
+
+    print("\n=== ДОБАВЛЕНИЕ ТОВАРА ===")
+    p4 = Product("Товар 4", "Описание 4", 700.0, 3)
+    category.add_product(p4)
+    print("После добавления товара за 700 руб.:")
+    print(f"Средний ценник: {category.average_price()} руб.")
+    # Ожидается: (100 + 300 + 500 + 700) / 4 = 400.0
